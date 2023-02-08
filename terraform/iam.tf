@@ -1,7 +1,7 @@
 resource "aws_iam_role" "email_automation_lambda_role" {
-  name = "email-automation-lambda-role"
+    name = "email-automation-lambda-role"
 
-  assume_role_policy = <<EOF
+    assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -16,4 +16,9 @@ resource "aws_iam_role" "email_automation_lambda_role" {
   ]
 }
 EOF
+
+    tags = {
+    "Name" = "Bandon"
+    }
+
 }
