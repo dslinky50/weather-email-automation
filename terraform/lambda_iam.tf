@@ -32,12 +32,11 @@ resource "aws_iam_role_policy" "email_automation" {
     Statement = [
       {
         Action = [
-          "s3:GetObject",
+          "s3:*",
+          "s3-object-lambda:*"
         ]
         Effect   = "Allow"
-        Resource = [
-          "${aws_s3_bucket.email_automation.arn}/*"
-        ]
+        Resource = "*"
       },
     ]
     })
