@@ -10,7 +10,7 @@ data "archive_file" "email_automation_layer" {
   output_path = "./lambda/requirements.zip"
 }
 
-resource "aws_lambda_layer_version" "lambda_layer" {
+resource "aws_lambda_layer_version" "email_automation_layer" {
   filename   = "./lambda/requirements.zip"
   layer_name = "weather-email-automation-layer"
   source_code_hash = data.archive_file.email_automation_layer.output_base64sha256
