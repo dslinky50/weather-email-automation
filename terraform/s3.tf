@@ -4,7 +4,7 @@ resource "aws_s3_bucket" "email_automation" {
     tags = {
       "Name" = "Bandon"
     }
-    
+
 }
 
 resource "aws_s3_object" "email_automation" {

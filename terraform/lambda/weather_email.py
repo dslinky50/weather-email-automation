@@ -23,7 +23,7 @@ from email.mime.base import MIMEBase
 def grab_s3_file():
     s3_client = boto3.client('s3')
     
-    s3_client.download_file('email-html-bucket-test', 'email_template.html', '/tmp/email_template.html')
+    s3_client.download_file('weather-email-automation', 'email_template.html', '/tmp/email_template.html')
     with open('/tmp/email_template.html', 'r') as f:
         trial = '''\
         {}
