@@ -9,7 +9,7 @@ resource "aws_s3_bucket" "email_automation" {
 
 resource "aws_s3_object" "email_automation" {
     bucket = aws_s3_bucket.email_automation.id
-    key = "email_tempalate.html"
+    key = "email_template.html"
     source = "../index/email_template.html"
 
     tags = {
