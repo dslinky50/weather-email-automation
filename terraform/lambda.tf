@@ -14,6 +14,9 @@ resource "aws_lambda_function" "email_automation" {
     role = aws_iam_role.email_automation_lambda_role.arn
     runtime = "python3.9"
     timeout = "5"
+    triggers {
+        main         = "${base64sha256(file("./lambda/weather_email.py"))}"
+    }
 
     tags = {
       "Name" = "Bandon"
