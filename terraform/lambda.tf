@@ -1,6 +1,6 @@
 data "archive_file" "email_automation" {
   type        = "zip"
-  source_file = "./lambda/weather_email.py.py"
+  source_file = "./lambda/weather_emailpy"
   output_path = "./lambda/lambda.zip"
 }
 
