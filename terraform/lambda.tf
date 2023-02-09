@@ -21,3 +21,10 @@ resource "aws_lambda_function" "email_automation" {
     }
 
 }
+
+resource "aws_lambda_permission" "allow_events_bridge_to_run_lambda" {
+    statement_id = "AllowExecutionFromCloudWatch"
+    action = "lambda:InvokeFunction"
+    function_name = aws_lambda_function.email_automation.function_name
+    principal = "events.amazonaws.com"
+}
