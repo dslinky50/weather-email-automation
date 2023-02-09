@@ -1,7 +1,7 @@
 resource "aws_cloudwatch_event_rule" "email_automation_schedule" {
     name = "email-automation-schedule"
     description = "Schedule for Lambda Function"
-    schedule_expression = "cron(*5***)"
+    schedule_expression = "rate(5 minutes)"
 }
 
 resource "aws_cloudwatch_event_target" "email_automation_target" {
