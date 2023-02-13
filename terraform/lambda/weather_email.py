@@ -164,7 +164,7 @@ def lambda_handler(event, context):
 
 ##################################################
 #               LOCAL TESTING                    #
-lambda_handler(event='event', context='context')
+# lambda_handler(event='event', context='context')
 ##################################################
 
 # SCOPES = 'https://www.googleapis.com/auth/gmail.send'
