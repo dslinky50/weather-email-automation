@@ -1,6 +1,6 @@
 # Standard imports
 import base64, json, os, urllib3
-from datetime import date
+from datetime import date, datetime, timedelta
 
 # Parsing imports
 import httplib2
@@ -28,36 +28,60 @@ weather_api_key = os.environ['WEATHER_API_KEY']
 
 def get_weather():
     http = urllib3.PoolManager()
-    response = json.loads(http.request('GET', f'http://api.weatherapi.com/v1/forecast.json?key={weather_api_key}&q=97411&days=7&aqi=no&alerts=no').data.decode('utf-8'))
 
-    # Current Day
-    temp = response['current']['temp_f']
-    wind = response['current']['wind_mph']
-    gust = response['current']['gust_mph']
-    precip = response['current']['precip_in']
+    # Today api call
+    today_response = json.loads(http.request('GET', f'http://api.weatherapi.com/v1/forecast.json?key={weather_api_key}&q=97411&days=1&aqi=no&alerts=no').data.decode('utf-8'))
+    temp = today_response['current']['temp_f']
+    wind = today_response['current']['wind_mph']
+    gust = today_response['current']['gust_mph']
+    precip = today_response['current']['precip_in']
 
     # Weekly
     wk_temp_count = 0
     wk_wind_count = 0
     wk_precip_count = 0
-    for day in response['forecast']['forecastday']:
-        temp = day['day']['avgtemp_f']
-        wind = day['day']['maxwind_mph']
-        precip = day['day']['totalprecip_in']
-        wk_temp_count += temp
-        wk_wind_count += wind
-        wk_precip_count += precip
+    week_list = create_weekly_dates()
+    for date in week_list:
+        response = json.loads(http.request('GET', f'http://api.weatherapi.com/v1/history.json?key={weather_api_key}&q=97411&dt={date}').data.decode('utf-8'))
+        for day in response['forecast']['forecastday']:
+            temp = day['day']['avgtemp_f']
+            wind = day['day']['maxwind_mph']
+            precip = day['day']['totalprecip_in']
+            wk_temp_count += temp
+            wk_wind_count += wind
+            wk_precip_count += precip
     wk_temp_avg = round(wk_temp_count/7, 1)
     wk_wind_avg = round(wk_wind_count/7, 1)
     wk_precip_avg = round(wk_precip_count/7, 1)
 
     return temp, wind, gust, precip, wk_temp_avg, wk_wind_avg, wk_precip_avg;
 
-def calc_date():
+def bandon_date():
+    # Bandon count down
     bandon = date(2024, 11, 1)
     today = date.today()
     diff = (bandon - today).days
     return diff
+
+def create_weekly_dates():
+    # Weekly date calculator
+    week_list = []
+    sat = datetime.now()
+    fri = sat - timedelta(1)
+    thur = sat - timedelta(2)
+    wed = sat - timedelta(3)
+    tues = sat - timedelta(4)
+    mon = sat - timedelta(5)
+    sun = sat - timedelta(6)
+    sat = sat.strftime('%Y-%m-%d')
+    fri = fri.strftime('%Y-%m-%d')
+    thur = thur.strftime('%Y-%m-%d')
+    wed = wed.strftime('%Y-%m-%d')
+    tues = tues.strftime('%Y-%m-%d')
+    mon = mon.strftime('%Y-%m-%d')
+    sun = sun.strftime('%Y-%m-%d')
+    week_list.extend([sun, mon, tues, wed, thur, fri, sat])
+    return week_list
 
 ###################
 ## EMAIL SECTION ##
@@ -66,7 +90,7 @@ def calc_date():
 def grab_s3_file():
     # Establish necessary variables
     temp, wind, gust, precip, wk_temp_avg, wk_wind_avg, wk_precip_avg = get_weather()
-    days = calc_date()
+    days = bandon_date()
 
     s3_client = boto3.client('s3')
     
@@ -140,5 +164,21 @@ def lambda_handler(event, context):
 
 ##################################################
 #               LOCAL TESTING                    #
-# lambda_handler(event='event', context='context')
+lambda_handler(event='event', context='context')
 ##################################################
+
+# SCOPES = 'https://www.googleapis.com/auth/gmail.send'
+# CLIENT_SECRET_FILE = 'client_secret.json'
+# def get_new_refresh_token():
+#     wd = os.getcwd()
+    
+
+#     credential_path = os.path.join(wd,
+#                                   'credentials.json')
+#     store = file.Storage(credential_path)
+#     creds = store.get()
+#     if not creds or creds.invalid:
+#         flow = client.flow_from_clientsecrets('client_secret.json', SCOPES)
+#         creds = tools.run_flow(flow, store)
+#     return creds
+# get_new_refresh_token()
