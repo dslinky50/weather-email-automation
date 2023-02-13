@@ -14,7 +14,7 @@ resource "aws_lambda_function" "email_automation" {
     role = aws_iam_role.email_automation_lambda_role.arn
     runtime = "python3.9"
     source_code_hash = filebase64sha256("./lambda/lambda.zip")
-    timeout = "5"
+    timeout = "10"
 
     tags = {
       "Name" = "Bandon"
