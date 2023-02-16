@@ -1,7 +1,7 @@
 resource "aws_lambda_function" "email_automation" {
-    depends_on = [
-      aws_lambda_layer_version.email_automation_layer
-    ]
+    # depends_on = [
+    #   aws_lambda_layer_version.email_automation_layer
+    # ]
     
     environment {
       variables = {
@@ -34,9 +34,9 @@ resource "aws_lambda_permission" "allow_events_bridge_to_run_lambda" {
     principal = "events.amazonaws.com"
 }
 
-resource "aws_lambda_layer_version" "email_automation_layer" {
-  layer_name = "email-automation-layer"
-  filename = "./lambda/requirements.zip"
-  compatible_runtimes = ["python3.9"]
-  source_code_hash = filebase64sha256("./lambda/requirements.zip")
-}
+# resource "aws_lambda_layer_version" "email_automation_layer" {
+#   layer_name = "email-automation-layer"
+#   filename = "./lambda/requirements.zip"
+#   compatible_runtimes = ["python3.9"]
+#   source_code_hash = filebase64sha256("./lambda/requirements.zip")
+# }
