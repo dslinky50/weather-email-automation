@@ -1,4 +1,8 @@
 resource "aws_lambda_function" "email_automation" {
+    depends_on = [
+      aws_lambda_layer_version.email_automation_layer
+    ]
+    
     environment {
       variables = {
         CLIENT_ID = "${var.CLIENT_ID}",

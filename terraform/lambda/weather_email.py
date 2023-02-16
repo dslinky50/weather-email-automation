@@ -10,15 +10,11 @@ import boto3
 
 # Gmail Modules
 from googleapiclient import errors, discovery
-from oauth2client import client, tools, file
+from oauth2client import client
 
 # Email Modules
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import mimetypes
-from email.mime.image import MIMEImage
-from email.mime.audio import MIMEAudio
-from email.mime.base import MIMEBase
 
 #####################
 ## WEATHER SECTION ##
