@@ -182,3 +182,5 @@ def lambda_handler(event, context):
 #         creds = tools.run_flow(flow, store)
 #     return creds
 # get_new_refresh_token()
+
+# current email list: dylan.silinski@gmail.com, cabrown253@gmail.com, jeremy.c.silinski@gmail.com, tomslinky@icloud.com
