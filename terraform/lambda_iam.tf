@@ -52,12 +52,37 @@ resource "aws_iam_role_policy" "email_sheets_automation" {
     Statement = [
       {
         Action = [
-          "lambda:*"
+          "lambda:InvokeFunction"
         ]
         Effect   = "Allow"
-        Resource = "*"
+        Resource = "${aws_lambda_function.sheets_automation.invoke_arn}"
       },
     ]
     })
+
+}
+
+resource "aws_iam_role" "sheets_automation_lambda_role" {
+    name = "sheets-automation-lambda-role"
+
+    assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Effect": "Allow",
+      "Sid": ""
+    }
+  ]
+}
+EOF
+
+    tags = {
+    "Name" = "Bandon"
+    }
 
 }
