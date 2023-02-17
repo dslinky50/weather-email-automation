@@ -42,3 +42,22 @@ resource "aws_iam_role_policy" "email_automation" {
     })
 
 }
+
+resource "aws_iam_role_policy" "email_sheets_automation" {
+    name = "email-lambda-sheets-policy"
+    role = aws_iam_role.email_automation_lambda_role.id
+
+    policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "lambda:*"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+    })
+
+}
