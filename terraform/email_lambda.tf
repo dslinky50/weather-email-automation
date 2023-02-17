@@ -12,9 +12,9 @@ resource "aws_lambda_function" "email_automation" {
         WEATHER_API_KEY = "${var.WEATHER_API_KEY}",
       }
     }
-    function_name = "weather-email-automation"
+    function_name = "email-weather-automation"
     filename = "./lambda/lambda.zip"
-    handler = "weather_email.lambda_handler"
+    handler = "email_weather.lambda_handler"
     # layers = [aws_lambda_layer_version.email_automation_layer.arn]
     role = aws_iam_role.email_automation_lambda_role.arn
     runtime = "python3.9"
@@ -27,7 +27,7 @@ resource "aws_lambda_function" "email_automation" {
 
 }
 
-resource "aws_lambda_permission" "allow_events_bridge_to_run_lambda" {
+resource "aws_lambda_permission" "email_event_bridge" {
     statement_id = "AllowExecutionFromCloudWatch"
     action = "lambda:InvokeFunction"
     function_name = aws_lambda_function.email_automation.function_name
