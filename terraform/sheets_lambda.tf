@@ -14,9 +14,9 @@ resource "aws_lambda_function" "sheets_automation" {
 
 }
 
-resource "aws_lambda_permission" "sheets_lambda_invoke" {
-    statement_id = "AllowExecutionFromEmailLambda"
+resource "aws_lambda_permission" "sheets_event_bridge" {
+    statement_id = "AllowExecutionFromCloudWatch"
     action = "lambda:InvokeFunction"
     function_name = aws_lambda_function.sheets_automation.function_name
-    principal = "lambda.amazonaws.com"
+    principal = "events.amazonaws.com"
 }
