@@ -55,7 +55,7 @@ resource "aws_iam_role_policy" "email_sheets_automation" {
           "lambda:InvokeFunction"
         ]
         Effect   = "Allow"
-        Resource = "${aws_lambda_function.sheets_automation.invoke_arn}"
+        Resource = "${aws_lambda_function.sheets_automation.arn}"
       },
     ]
     })
