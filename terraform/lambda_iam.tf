@@ -86,3 +86,13 @@ EOF
     }
 
 }
+
+resource "aws_iam_role_policy_attachment" "email_cloudwatch_attach" {
+  role       = aws_iam_role.email_automation_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "sheets_cloudwatch_attach" {
+  role       = aws_iam_role.sheets_automation_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
