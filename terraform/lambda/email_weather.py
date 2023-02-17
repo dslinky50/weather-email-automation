@@ -87,6 +87,14 @@ def grab_s3_file():
     # Establish necessary variables
     temp, wind, gust, precip, wk_temp_avg, wk_wind_avg, wk_precip_avg = get_weather()
     days = bandon_date()
+    sheets_payload = {}
+    sheets_payload['weekly_temp'] = wk_temp_avg
+    sheets_payload['weekly_wind'] = wk_wind_avg
+    sheets_payload['weekly_rain'] = wk_precip_avg
+ 
+    lambda_client = boto3.client('lambda')
+
+    lambda_client.invoke(FunctionName='sheets-weather-automation', InvocationType='Event', Payload=json.dumps(sheets_payload))
 
     s3_client = boto3.client('s3')
     
