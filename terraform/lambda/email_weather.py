@@ -1,26 +1,23 @@
-# Standard imports
-import base64, json, os, urllib3
+# Standard Imports
+import boto3, os, urllib3, json
 from datetime import date, datetime, timedelta
-
-# Parsing imports
-import httplib2
-import html2text
-from mako.template import Template
-import boto3
-
-# Gmail Modules
-from googleapiclient import errors, discovery
-from oauth2client import client
-
-# Email Modules
+from botocore.exceptions import ClientError
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from mako.template import Template
+
+###########################
+## ENVIRONMENT VARIABLES ##
+###########################
+
+weather_api_key = os.environ['WEATHER_API_KEY']
+sender_email = 'dylan@big-birdie-tracker.com'
+receiver_email = os.environ['EMAIL_LIST']
+subject = 'Bandon 2024 Trip/Weather Update'
 
 #####################
 ## WEATHER SECTION ##
 #####################
-
-weather_api_key = os.environ['WEATHER_API_KEY']
 
 def get_weather():
     http = urllib3.PoolManager()
@@ -83,21 +80,13 @@ def create_weekly_dates():
 ## EMAIL SECTION ##
 ###################
 
-def grab_s3_file():
+def create_email_template():
     # Establish necessary variables
     temp, wind, gust, precip, wk_temp_avg, wk_wind_avg, wk_precip_avg = get_weather()
     days = bandon_date()
-    sheets_payload = {}
-    sheets_payload['weekly_temp'] = wk_temp_avg
-    sheets_payload['weekly_wind'] = wk_wind_avg
-    sheets_payload['weekly_rain'] = wk_precip_avg
- 
-    lambda_client = boto3.client('lambda')
-
-    lambda_client.invoke(FunctionName='sheets-weather-automation', InvocationType='Event', Payload=json.dumps(sheets_payload))
-
-    s3_client = boto3.client('s3')
     
+    # Establish s3 Client
+    s3_client = boto3.client('s3')
     s3_client.download_file('weather-email-automation', 'email_template.html', '/tmp/email_template.html')
     with open('/tmp/email_template.html', 'r') as f:
         trial = '''\
@@ -109,58 +98,42 @@ def grab_s3_file():
     
     return transformation
 
-def get_credentials():
-    client_id = os.environ['CLIENT_ID']
-    client_secret = os.environ['CLIENT_SECRET']
-    refresh_token = os.environ['REFRESH_TOKEN']
-    credentials = client.GoogleCredentials(None, client_id, client_secret,refresh_token,None,'https://accounts.google.com/o/oauth2/token','my-user-agent')
-    return credentials
+def send_ses_email():
+    # Create Email Templace
+    template = create_email_template()
 
-def SendMessage(sender, to, subject, msgHtml, msgPlain):
-    credentials = get_credentials()
-    http = credentials.authorize(httplib2.Http())
-    service = discovery.build('gmail', 'v1', http=http)
-    message1 = CreateMessageHtml(sender, to, subject, msgHtml, msgPlain)
-    result = SendMessageInternal(service, 'me', message1)
-    return result
+    # Set up AWS SES client
+    ses_client = boto3.client('ses', region_name='us-east-1')
 
-def SendMessageInternal(service, user_id, message):
+    # Set up email message
+    message = MIMEMultipart('mixed')
+    message['Subject'] = subject
+    message['From'] = sender_email
+    message['To'] = receiver_email
+    html_part = MIMEText(template, 'html')
+    message.attach(html_part)
+
+    # Send email
     try:
-        message = (service.users().messages().send(userId=user_id, body=message).execute())
-        return message
-    except errors.HttpError as error:
-        print('An error occurred: %s' % error)
-        return 'Error'
-    return 'OK'
-
-def CreateMessageHtml(sender, to, subject, msgHtml, msgPlain):
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = subject
-    msg['From'] = sender
-    msg['BCC'] = to
-    msg.attach(MIMEText(msgPlain, 'plain'))
-    msg.attach(MIMEText(msgHtml, 'html'))
-    return {'raw': base64.urlsafe_b64encode(msg.as_string().encode('UTF-8')).decode('ascii')}
-
-def html_to_plain_text(html):
-    plain = html2text.html2text(html)
-    return plain
-    
-sender_email = 'dylan.silinski@gmail.com'
-receiver_email = os.environ['EMAIL_LIST']
-subject = 'Bandon 2024 Trip/Weather Update'
+        response = ses_client.send_raw_email(
+            RawMessage={
+                'Data': message.as_string(),
+            }
+        )
+        print("Email sent! Message ID:", response['MessageId'])
+        return response['MessageId']
+    except ClientError as e:
+        print("Error sending email:", e.response['Error']['Message'])
+        return e.response['Error']['Message']
 
 
-def main(html_file):
-    message = SendMessage(sender_email, receiver_email, subject, msgHtml=html_file, msgPlain=html_to_plain_text(html_file))
-    return message
+
 
 def lambda_handler(event, context):
-    transformation = grab_s3_file()
-    message = main(transformation)    
+    email = send_ses_email()    
     response = {
         'statusCode': 200,
-        'body': 'Sent Message ID: {}'.format(message['id'])
+        'body': 'Sent Message ID: {}'.format(email)
     }
     
     print(response)
@@ -170,21 +143,4 @@ def lambda_handler(event, context):
 #               LOCAL TESTING                    #
 # lambda_handler(event='event', context='context')
 ##################################################
-
-# SCOPES = 'https://www.googleapis.com/auth/gmail.send'
-# CLIENT_SECRET_FILE = 'client_secret.json'
-# def get_new_refresh_token():
-#     wd = os.getcwd()
-    
-
-#     credential_path = os.path.join(wd,
-#                                   'credentials.json')
-#     store = file.Storage(credential_path)
-#     creds = store.get()
-#     if not creds or creds.invalid:
-#         flow = client.flow_from_clientsecrets('client_secret.json', SCOPES)
-#         creds = tools.run_flow(flow, store)
-#     return creds
-# get_new_refresh_token()
-
 # current email list: dylan.silinski@gmail.com, cabrown253@gmail.com, jeremy.c.silinski@gmail.com, tomslinky@icloud.com
