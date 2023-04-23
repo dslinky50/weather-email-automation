@@ -5,6 +5,7 @@ from botocore.exceptions import ClientError
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from mako.template import Template
+from decimal import *
 
 ###########################
 ## ENVIRONMENT VARIABLES ##
@@ -76,6 +77,30 @@ def create_weekly_dates():
     week_list.extend([sun, mon, tues, wed, thur, fri, sat])
     return week_list
 
+######################
+## DATABASE SECTION ##
+######################
+
+def put_in_db(precipitation, temp, wind):
+    # Establish DB Connection
+    dynamodb = boto3.resource('dynamodb')
+    table = dynamodb.Table('bandon-weather-data')
+
+    # Use necessary functions
+    week_list = create_weekly_dates()
+    sunday = week_list[0]
+
+    # Build Data Input
+    data_input = {}
+    data_input['Date'] = sunday
+    data_input['Precipitation'] = format(Decimal(precipitation), '.2g')
+    data_input['Temperature'] = format(Decimal(temp), '.2g')
+    data_input['Wind'] = format(Decimal(wind), '.2g')
+
+    # Input Data
+    table.put_item(Item=data_input)
+    
+
 ###################
 ## EMAIL SECTION ##
 ###################
@@ -84,6 +109,9 @@ def create_email_template():
     # Establish necessary variables
     temp, wind, gust, precip, wk_temp_avg, wk_wind_avg, wk_precip_avg = get_weather()
     days = bandon_date()
+
+    # Input Data in DB
+    put_in_db(precipitation=wk_precip_avg, temp=wk_temp_avg, wind=wk_wind_avg)
     
     # Establish s3 Client
     s3_client = boto3.client('s3')
@@ -141,6 +169,6 @@ def lambda_handler(event, context):
 
 ##################################################
 #               LOCAL TESTING                    #
-lambda_handler(event='event', context='context')
+# lambda_handler(event='event', context='context')
 ##################################################
 # current email list: dylan.silinski@gmail.com, cabrown253@gmail.com, jeremy.c.silinski@gmail.com, tomslinky@icloud.com
