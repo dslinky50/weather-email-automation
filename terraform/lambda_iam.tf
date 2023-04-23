@@ -32,6 +32,7 @@ resource "aws_iam_role_policy" "email_automation" {
     Statement = [
       {
         Action = [
+          "dynamodb:PutItem",
           "s3:*",
           "s3-object-lambda:*",
           "ses:SendEmail",
