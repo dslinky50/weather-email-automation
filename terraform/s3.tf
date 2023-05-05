@@ -18,3 +18,12 @@ resource "aws_s3_object" "email_automation" {
     }
 
 }
+
+resource "aws_s3_bucket" "bandon_weather_bucket" {
+    bucket = "bandon-weather-data-bucket"
+
+    tags = {
+      "Name" = "Bandon"
+    }
+
+}
