@@ -3,7 +3,7 @@ import boto3
 import json
 
 def lambda_handler(event, context):
-    TABLE_NAME = 'bandon-weather-data-bucket'
+    TABLE_NAME = 'bandon-weather-data'
     OUTPUT_BUCKET = 'test-google-creds'
     TEMP_FILENAME = '/tmp/weather.csv'
     OUTPUT_KEY = 'weather.csv'
