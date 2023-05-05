@@ -8,8 +8,8 @@ resource "aws_cloudwatch_event_rule" "weather_csv_schedule" {
     }
 }
 
-resource "aws_cloudwatch_event_target" "weather_dynamo_target" {
-    rule = aws_cloudwatch_event_rule.weather_dynamo_schedule.name
+resource "aws_cloudwatch_event_target" "weather_csv_target" {
+    rule = aws_cloudwatch_event_rule.weather_csv_schedule.name
     target_id = "weather_csv_lambda"
     arn = aws_lambda_function.csv_automation.arn
 }
