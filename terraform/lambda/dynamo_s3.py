@@ -4,7 +4,7 @@ import json
 
 def lambda_handler(event, context):
     TABLE_NAME = 'bandon-weather-data'
-    OUTPUT_BUCKET = 'test-google-creds'
+    OUTPUT_BUCKET = 'bandon-weather-data-bucket'
     TEMP_FILENAME = '/tmp/weather.csv'
     OUTPUT_KEY = 'weather.csv'
 
