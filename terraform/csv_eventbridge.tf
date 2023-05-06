@@ -1,7 +1,7 @@
 resource "aws_cloudwatch_event_rule" "weather_csv_schedule" {
     name = "weather-csv-schedule"
     description = "Schedule for Lambda Function"
-    schedule_expression = "cron(10 4 * * ? *)"
+    schedule_expression = "cron(10 7 * * ? *)"
 
     tags = {
       "Name" = "Bandon"
