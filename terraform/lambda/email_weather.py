@@ -111,7 +111,8 @@ def create_email_template():
     days = bandon_date()
 
     # Input Data in DB
-    put_in_db(precipitation=wk_precip_avg, temp=wk_temp_avg, wind=wk_wind_avg)
+    # Deprecating this function due to new lambdas (5-5-23)
+    # put_in_db(precipitation=wk_precip_avg, temp=wk_temp_avg, wind=wk_wind_avg)
     
     # Establish s3 Client
     s3_client = boto3.client('s3')

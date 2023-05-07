@@ -1,7 +1,7 @@
 resource "aws_cloudwatch_event_rule" "weather_dynamo_schedule" {
     name = "weather-dynamo-schedule"
     description = "Schedule for Lambda Function"
-    schedule_expression = "cron(5 7 * * ? *)"
+    schedule_expression = "cron(5 */6 ? * * *)"
 
     tags = {
       "Name" = "Bandon"
