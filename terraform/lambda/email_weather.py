@@ -25,10 +25,11 @@ def get_weather():
 
     # Today api call
     today_response = json.loads(http.request('GET', f'http://api.weatherapi.com/v1/forecast.json?key={weather_api_key}&q=97411&days=1&aqi=no&alerts=no').data.decode('utf-8'))
-    temp = today_response['current']['temp_f']
-    wind = today_response['current']['wind_mph']
-    gust = today_response['current']['gust_mph']
-    precip = today_response['current']['precip_in']
+    temp = today_response['forecast']['forecastday'][0]['day']['avgtemp_f']
+    wind = today_response['forecast']['forecastday'][0]['day']['maxwind_mph']
+    rain_chance = today_response['forecast']['forecastday'][0]['day']['maxwind_mph']
+    precip = today_response['forecast']['forecastday'][0]['day']['daily_chance_of_rain']
+    condition = today_response['forecast']['forecastday'][0]['day']['condition']['text']
 
     # Weekly
     wk_temp_count = 0
@@ -48,7 +49,7 @@ def get_weather():
     wk_wind_avg = round(wk_wind_count/7, 1)
     wk_precip_avg = round(wk_precip_count/7, 1)
 
-    return temp, wind, gust, precip, wk_temp_avg, wk_wind_avg, wk_precip_avg;
+    return temp, wind, rain_chance, precip, condition, wk_temp_avg, wk_wind_avg, wk_precip_avg;
 
 def bandon_date():
     # Bandon count down
@@ -107,7 +108,7 @@ def put_in_db(precipitation, temp, wind):
 
 def create_email_template():
     # Establish necessary variables
-    temp, wind, gust, precip, wk_temp_avg, wk_wind_avg, wk_precip_avg = get_weather()
+    temp, wind, rain_chance, precip, condition, wk_temp_avg, wk_wind_avg, wk_precip_avg = get_weather()
     days = bandon_date()
 
     # Input Data in DB
@@ -123,7 +124,7 @@ def create_email_template():
         '''.format(f.read())
     
     tmp = Template(trial)
-    transformation = tmp.render(days=days, temp=temp, wind=wind, gust=gust, precip=precip, wk_temp_avg=wk_temp_avg, wk_wind_avg=wk_wind_avg, wk_precip_avg=wk_precip_avg)
+    transformation = tmp.render(days=days, temp=temp, wind=wind, rain_chance=rain_chance, condition=condition, precip=precip, wk_temp_avg=wk_temp_avg, wk_wind_avg=wk_wind_avg, wk_precip_avg=wk_precip_avg)
     
     return transformation
 
