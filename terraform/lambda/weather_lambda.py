@@ -20,7 +20,7 @@ def get_weather():
     wind = today_response['current']['wind_mph']
     gust = today_response['current']['gust_mph']
     precip = today_response['current']['precip_in']
-    today = today_response['current']['last_updated'].split(' ')[0]
+    today = today_response['current']['last_updated']
     return gust, precip, temp, today, wind
 
 ######################
