@@ -1,5 +1,6 @@
 # Standard Imports
 import boto3, os, urllib3, json
+from boto3.dynamodb.conditions import Key, Attr
 from datetime import date, datetime, timedelta
 from botocore.exceptions import ClientError
 from email.mime.multipart import MIMEMultipart
@@ -27,29 +28,11 @@ def get_weather():
     today_response = json.loads(http.request('GET', f'http://api.weatherapi.com/v1/forecast.json?key={weather_api_key}&q=97411&days=1&aqi=no&alerts=no').data.decode('utf-8'))
     temp = today_response['forecast']['forecastday'][0]['day']['avgtemp_f']
     wind = today_response['forecast']['forecastday'][0]['day']['maxwind_mph']
-    rain_chance = today_response['forecast']['forecastday'][0]['day']['maxwind_mph']
-    precip = today_response['forecast']['forecastday'][0]['day']['daily_chance_of_rain']
+    rain_chance = today_response['forecast']['forecastday'][0]['day']['daily_chance_of_rain']
+    precip = today_response['forecast']['forecastday'][0]['day']['totalprecip_in']
     condition = today_response['forecast']['forecastday'][0]['day']['condition']['text']
 
-    # Weekly
-    wk_temp_count = 0
-    wk_wind_count = 0
-    wk_precip_count = 0
-    week_list = create_weekly_dates()
-    for date in week_list:
-        response = json.loads(http.request('GET', f'http://api.weatherapi.com/v1/history.json?key={weather_api_key}&q=97411&dt={date}').data.decode('utf-8'))
-        for day in response['forecast']['forecastday']:
-            temp = day['day']['avgtemp_f']
-            wind = day['day']['maxwind_mph']
-            precip = day['day']['totalprecip_in']
-            wk_temp_count += temp
-            wk_wind_count += wind
-            wk_precip_count += precip
-    wk_temp_avg = round(wk_temp_count/7, 1)
-    wk_wind_avg = round(wk_wind_count/7, 1)
-    wk_precip_avg = round(wk_precip_count/7, 1)
-
-    return temp, wind, rain_chance, precip, condition, wk_temp_avg, wk_wind_avg, wk_precip_avg;
+    return temp, wind, rain_chance, precip, condition;
 
 def bandon_date():
     # Bandon count down
@@ -82,25 +65,48 @@ def create_weekly_dates():
 ## DATABASE SECTION ##
 ######################
 
-def put_in_db(precipitation, temp, wind):
+def Average(lst):
+    return sum(lst) / len(lst)
+
+def query_db():
     # Establish DB Connection
     dynamodb = boto3.resource('dynamodb')
     table = dynamodb.Table('bandon-weather-data')
 
     # Use necessary functions
     week_list = create_weekly_dates()
-    sunday = week_list[0]
 
-    # Build Data Input
-    data_input = {}
-    data_input['Date'] = sunday
-    data_input['Precipitation'] = format(Decimal(precipitation), '.2g')
-    data_input['Temperature'] = format(Decimal(temp), '.2g')
-    data_input['Wind'] = format(Decimal(wind), '.2g')
+    # Pre-set weekly average lists
+    gust_wk_avg = []
+    precip_wk_avg = []
+    temp_wk_avg = []
+    wind_wk_avg = []
 
-    # Input Data
-    table.put_item(Item=data_input)
-    
+    # Query DB
+    for date in week_list:
+        gust_addr = []
+        precip_addr = []
+        temp_addr = []
+        wind_addr = []
+        response = table.scan(
+            FilterExpression=Attr('Date').begins_with(date)
+        )
+        for item in response['Items']:
+            gust = item['Gust']
+            gust_addr.append(float(gust))
+            precip = item['Precipitation']
+            precip_addr.append(float(precip))
+            temp = item['Temperature']
+            temp_addr.append(int(temp))
+            wind = item['Wind']
+            wind_addr.append(float(wind))
+
+        gust_wk_avg.append(Average(gust_addr))
+        precip_wk_avg.append(Average(precip_addr))
+        temp_wk_avg.append(Average(temp_addr))
+        wind_wk_avg.append(Average(wind_addr))
+
+    return round(Average(gust_wk_avg), 1), round(Average(precip_wk_avg), 1), round(Average(temp_wk_avg), 1), round(Average(wind_wk_avg), 1);
 
 ###################
 ## EMAIL SECTION ##
@@ -108,12 +114,9 @@ def put_in_db(precipitation, temp, wind):
 
 def create_email_template():
     # Establish necessary variables
-    temp, wind, rain_chance, precip, condition, wk_temp_avg, wk_wind_avg, wk_precip_avg = get_weather()
+    temp, wind, rain_chance, precip, condition = get_weather()
+    wk_gust_avg, wk_precip_avg, wk_temp_avg, wk_wind_avg = query_db()
     days = bandon_date()
-
-    # Input Data in DB
-    # Deprecating this function due to new lambdas (5-5-23)
-    # put_in_db(precipitation=wk_precip_avg, temp=wk_temp_avg, wind=wk_wind_avg)
     
     # Establish s3 Client
     s3_client = boto3.client('s3')
@@ -124,7 +127,7 @@ def create_email_template():
         '''.format(f.read())
     
     tmp = Template(trial)
-    transformation = tmp.render(days=days, temp=temp, wind=wind, rain_chance=rain_chance, condition=condition, precip=precip, wk_temp_avg=wk_temp_avg, wk_wind_avg=wk_wind_avg, wk_precip_avg=wk_precip_avg)
+    transformation = tmp.render(days=days, temp=temp, wind=wind, rain_chance=rain_chance, condition=condition, precip=precip, wk_temp_avg=wk_temp_avg, wk_wind_avg=wk_wind_avg, wk_precip_avg=wk_precip_avg, wk_gust_avg=wk_gust_avg)
     
     return transformation
 
@@ -171,6 +174,6 @@ def lambda_handler(event, context):
 
 ##################################################
 #               LOCAL TESTING                    #
-# lambda_handler(event='event', context='context')
+lambda_handler(event='event', context='context')
 ##################################################
 # current email list: dylan.silinski@gmail.com, cabrown253@gmail.com, jeremy.c.silinski@gmail.com, tomslinky@icloud.com
