@@ -23,7 +23,6 @@ def get_weather():
     precip = today_response['current']['precip_in']
     today = today_response['current']['last_updated']
     return gust, precip, temp, today, wind
-#get_weather()
 
 ######################
 ## DATABASE SECTION ##
