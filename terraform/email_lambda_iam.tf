@@ -33,6 +33,7 @@ resource "aws_iam_role_policy" "email_automation" {
       {
         Action = [
           "dynamodb:PutItem",
+          "dynamodb:Scan",
           "s3:*",
           "s3-object-lambda:*",
           "ses:SendEmail",
