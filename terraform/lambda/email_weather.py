@@ -66,7 +66,10 @@ def create_weekly_dates():
 ######################
 
 def Average(lst):
-    return sum(lst) / len(lst)
+    if sum(lst) == 0:
+        return 0
+    else:
+        return sum(lst) / len(lst)
 
 def query_db():
     # Establish DB Connection
@@ -174,6 +177,6 @@ def lambda_handler(event, context):
 
 ##################################################
 #               LOCAL TESTING                    #
-# lambda_handler(event='event', context='context')
+lambda_handler(event='event', context='context')
 ##################################################
 # current email list: dylan.silinski@gmail.com, cabrown253@gmail.com, jeremy.c.silinski@gmail.com, tomslinky@icloud.com
