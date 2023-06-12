@@ -36,7 +36,7 @@ def get_weather():
 
 def bandon_date():
     # Bandon count down
-    bandon = date(2024, 11, 1)
+    bandon = date(2024, 11, 10)
     today = date.today()
     diff = (bandon - today).days
     return diff
