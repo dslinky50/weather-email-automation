@@ -36,9 +36,9 @@ def get_weather():
 
 def scotland_date():
     # Scotland count down
-    sctoland = date(2026, 5, 1)
+    scotland = date(2026, 5, 1)
     today = date.today()
-    diff = (sctoland - today).days
+    diff = (scotland - today).days
     return diff
 
 def create_weekly_dates():
@@ -177,6 +177,6 @@ def lambda_handler(event, context):
 
 ##################################################
 #               LOCAL TESTING                    #
-lambda_handler(event='event', context='context')
+# lambda_handler(event='event', context='context')
 ##################################################
 # current email list: dylan.silinski@gmail.com, cabrown253@gmail.com, jeremy.c.silinski@gmail.com, tomslinky@icloud.com
