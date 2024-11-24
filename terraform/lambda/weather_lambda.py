@@ -16,7 +16,7 @@ def get_weather():
     http = urllib3.PoolManager()
 
     # Today api call
-    today_response = json.loads(http.request('GET', f'http://api.weatherapi.com/v1/forecast.json?key={weather_api_key}&q=97411&days=1&aqi=no&alerts=no').data.decode('utf-8'))
+    today_response = json.loads(http.request('GET', f'http://api.weatherapi.com/v1/forecast.json?key={weather_api_key}&q=EH1&days=1&aqi=no&alerts=no').data.decode('utf-8'))
     temp = today_response['current']['temp_f']
     wind = today_response['current']['wind_mph']
     gust = today_response['current']['gust_mph']

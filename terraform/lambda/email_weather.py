@@ -15,7 +15,7 @@ from decimal import *
 weather_api_key = os.environ['WEATHER_API_KEY']
 sender_email = 'dylan@big-birdie-tracker.com'
 receiver_email = os.environ['EMAIL_LIST']
-subject = 'Bandon 2024 Trip/Weather Update'
+subject = 'Scotland 2026 Trip/Weather Update'
 
 #####################
 ## WEATHER SECTION ##
@@ -25,7 +25,7 @@ def get_weather():
     http = urllib3.PoolManager()
 
     # Today api call
-    today_response = json.loads(http.request('GET', f'http://api.weatherapi.com/v1/forecast.json?key={weather_api_key}&q=97411&days=1&aqi=no&alerts=no').data.decode('utf-8'))
+    today_response = json.loads(http.request('GET', f'http://api.weatherapi.com/v1/forecast.json?key={weather_api_key}&q=EH1&days=1&aqi=no&alerts=no').data.decode('utf-8'))
     temp = today_response['forecast']['forecastday'][0]['day']['avgtemp_f']
     wind = today_response['forecast']['forecastday'][0]['day']['maxwind_mph']
     rain_chance = today_response['forecast']['forecastday'][0]['day']['daily_chance_of_rain']
@@ -34,11 +34,11 @@ def get_weather():
 
     return temp, wind, rain_chance, precip, condition;
 
-def bandon_date():
-    # Bandon count down
-    bandon = date(2024, 11, 10)
+def scotland_date():
+    # Scotland count down
+    sctoland = date(2026, 5, 1)
     today = date.today()
-    diff = (bandon - today).days
+    diff = (sctoland - today).days
     return diff
 
 def create_weekly_dates():
@@ -119,7 +119,7 @@ def create_email_template():
     # Establish necessary variables
     temp, wind, rain_chance, precip, condition = get_weather()
     wk_gust_avg, wk_precip_avg, wk_temp_avg, wk_wind_avg = query_db()
-    days = bandon_date()
+    days = scotland_date()
     
     # Establish s3 Client
     s3_client = boto3.client('s3')
@@ -177,6 +177,6 @@ def lambda_handler(event, context):
 
 ##################################################
 #               LOCAL TESTING                    #
-# lambda_handler(event='event', context='context')
+lambda_handler(event='event', context='context')
 ##################################################
 # current email list: dylan.silinski@gmail.com, cabrown253@gmail.com, jeremy.c.silinski@gmail.com, tomslinky@icloud.com
